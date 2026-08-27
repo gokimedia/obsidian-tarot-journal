@@ -7,6 +7,8 @@ import {
   PluginSettingTab,
   Setting,
   TFile,
+  TFolder,
+  normalizePath,
 } from "obsidian";
 
 interface TarotJournalSettings {
@@ -111,15 +113,27 @@ export default class TarotJournalPlugin extends Plugin {
       .replace("{{upright}}", card.upright)
       .replace("{{guideUrl}}", card.guideUrl);
 
-    const folder = this.settings.journalFolder;
-    if (!(await this.app.vault.adapter.exists(folder))) {
+    const folder = normalizePath(
+      this.settings.journalFolder.trim() || DEFAULT_SETTINGS.journalFolder,
+    );
+    const folderEntry = this.app.vault.getAbstractFileByPath(folder);
+    if (!folderEntry) {
       await this.app.vault.createFolder(folder);
+    } else if (!(folderEntry instanceof TFolder)) {
+      new Notice(`Cannot create tarot journal: ${folder} is not a folder`);
+      return;
     }
-    const path = `${folder}/${date}.md`;
-    let file = this.app.vault.getAbstractFileByPath(path) as TFile | null;
-    if (file) {
-      const existing = await this.app.vault.read(file);
-      await this.app.vault.modify(file, existing + "\n\n" + content);
+    const path = normalizePath(`${folder}/${date}.md`);
+    const pathEntry = this.app.vault.getAbstractFileByPath(path);
+    let file: TFile;
+    if (pathEntry instanceof TFile) {
+      file = pathEntry;
+      await this.app.vault.process(file, (existing) =>
+        `${existing}\n\n${content}`,
+      );
+    } else if (pathEntry) {
+      new Notice(`Cannot save tarot reading: ${path} is not a file`);
+      return;
     } else {
       file = await this.app.vault.create(path, content);
     }
@@ -146,7 +160,6 @@ class TarotJournalSettingTab extends PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    containerEl.createEl("h2", { text: "Tarot Journal Settings" });
 
     new Setting(containerEl)
       .setName("Journal folder")

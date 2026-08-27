@@ -1,6 +1,6 @@
 {
   "name": "obsidian-tarot-journal",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Tarot Journal plugin for Obsidian. Powered by Deckaura (https://deckaura.com).",
   "main": "main.js",
   "scripts": {

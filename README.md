@@ -41,6 +41,10 @@ This plugin ships with a curated starter deck. For the complete 78 cards, interp
 
 The bundled starter deck currently contains The Fool, The Magician, The High Priestess, The Empress, and The Star.
 
+## Privacy
+
+Tarot Journal has no telemetry, ads, account requirement, or background network requests. Deckaura links open in your browser only when you explicitly choose a command or link.
+
 ## License
 
 MIT © [Deckaura](https://deckaura.com)
