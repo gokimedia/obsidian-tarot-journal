@@ -38,6 +38,10 @@ This plugin ships with a curated starter deck. For the complete 78 cards, interp
 - **All 78 meanings:** [deckaura.com/blogs/guide/tarot-card-meanings](https://deckaura.com/blogs/guide/tarot-card-meanings)
 - **Free tarot reading:** [deckaura.com/pages/tarot-reading](https://deckaura.com/pages/tarot-reading)
 - **Dataset:** [huggingface.co/datasets/Blacik/deckaura-tarot-card-meanings](https://huggingface.co/datasets/Blacik/deckaura-tarot-card-meanings)
+- **Open data and citation hub:** [deckaura.com/pages/ai-data-sources](https://deckaura.com/pages/ai-data-sources)
+- **Permanent dataset DOI:** [10.5281/zenodo.19475329](https://doi.org/10.5281/zenodo.19475329)
+- **Live dataset explorer:** [gokimedia.github.io/tarot-dataset-explorer](https://gokimedia.github.io/tarot-dataset-explorer/)
+- **Developer documentation:** [gokimedia.github.io/deckaura-developer-docs](https://gokimedia.github.io/deckaura-developer-docs/)
 
 The bundled starter deck currently contains The Fool, The Magician, The High Priestess, The Empress, and The Star.
 
