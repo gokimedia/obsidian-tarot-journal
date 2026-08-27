@@ -1,11 +1,10 @@
 {
   "id": "tarot-journal",
   "name": "Tarot Journal",
-  "version": "1.0.1",
-  "minAppVersion": "1.5.0",
-  "description": "Log daily tarot readings in your Obsidian vault. Draw cards, record interpretations, and build a searchable tarot practice journal. Powered by Deckaura.",
+  "version": "1.0.2",
+  "minAppVersion": "1.13.8",
+  "description": "Draw from all 78 tarot cards, save daily readings, and build a searchable reflection journal.",
   "author": "Deckaura",
   "authorUrl": "https://deckaura.com",
-  "fundingUrl": "https://deckaura.com",
   "isDesktopOnly": false
 }

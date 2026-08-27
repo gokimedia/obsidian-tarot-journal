@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - name: Validate release metadata
+        run: >-
+          node -e "const fs=require('node:fs');
+          const pkg=require('./package.json');
+          const manifest=require('./manifest.json');
+          const versions=require('./versions.json');
+          const deck=require('./cards.json');
+          if(pkg.version!==manifest.version) throw new Error('Version mismatch');
+          if(versions[manifest.version]!==manifest.minAppVersion) throw new Error('Compatibility map mismatch');
+          if(deck.cards.length!==78) throw new Error('Deck must contain 78 cards');
+          if(!fs.existsSync('main.js')) throw new Error('main.js was not built');"

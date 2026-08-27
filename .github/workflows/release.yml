@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - name: Verify tag and manifest version
+        run: >-
+          node -e "const manifest=require('./manifest.json');
+          if(manifest.version!==process.env.GITHUB_REF_NAME)
+          throw new Error('Tag must match manifest version');"
+      - name: Publish GitHub release
+        run: gh release create "$GITHUB_REF_NAME" main.js manifest.json --title "Tarot Journal $GITHUB_REF_NAME" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}

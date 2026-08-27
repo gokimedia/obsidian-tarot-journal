@@ -1,53 +1,57 @@
 # Tarot Journal for Obsidian
 
-Log daily tarot readings in your Obsidian vault. Draw cards, record interpretations, and build a searchable tarot practice journal.
-
-Powered by **[Deckaura](https://deckaura.com)** — free tarot tools and 78-card meaning guides.
+Draw tarot cards, save daily readings, and build a searchable reflection
+journal inside your vault. The complete 78-card deck is bundled with the
+plugin, so drawing and journaling work offline.
 
 ## Features
 
-- **Draw daily tarot card** — Creates/appends a dated note in your Tarot Journal folder
-- **Insert random tarot card** — Insert a card inline at cursor position
-- **Ribbon icon** — One-click daily draw from the left sidebar
-- **Customizable template** — Use placeholders: `{{date}}`, `{{card}}`, `{{upright}}`, `{{guideUrl}}`
-- **Full card guides** — Every entry links to the in-depth guide on Deckaura
+- Draw from all 78 Major and Minor Arcana cards.
+- Choose whether draws can include reversed orientations.
+- Create or append to a dated note in a configurable journal folder.
+- Insert a random card at the current editor position.
+- Customize the daily entry with `{{date}}`, `{{card}}`, `{{orientation}}`,
+  `{{meaning}}`, `{{upright}}`, `{{reversed}}`, and `{{guideUrl}}` placeholders.
+- Open an optional, card-specific interpretation guide from each entry.
 
 ## Installation
 
-### From Community Plugins (once approved)
-1. Settings → Community plugins → Browse
-2. Search "Tarot Journal"
-3. Install and enable
+### Community plugins
 
-### Manual install
-1. Download `main.js` and `manifest.json` from Releases
-2. Place in `<vault>/.obsidian/plugins/tarot-journal/`
-3. Enable in Settings → Community plugins
+Once the plugin is approved:
+
+1. Open **Settings → Community plugins → Browse**.
+2. Search for **Tarot Journal**.
+3. Select **Install**, then **Enable**.
+
+### Manual installation
+
+1. Download `main.js` and `manifest.json` from the latest GitHub release.
+2. Place both files in `<vault>/.obsidian/plugins/tarot-journal/`.
+3. Reload Obsidian and enable **Tarot Journal** in Community plugins.
 
 ## Usage
 
-- Click the dice icon in the left ribbon, or
-- Run command: `Tarot Journal: Draw daily tarot card`, or
-- Insert inline: `Tarot Journal: Insert random tarot card at cursor`
+- Select the dice icon in the ribbon to save a daily draw.
+- Run **Tarot Journal: Draw daily tarot card** from the command palette.
+- Run **Tarot Journal: Insert random tarot card** while editing a note.
+- Configure the journal folder, reversed cards, and entry template under
+  **Settings → Tarot Journal**.
 
-## Full 78-Card Deck
+## Data and attribution
 
-This plugin ships with a curated starter deck. For the complete 78 cards, interpretive depth, and free online tools visit:
+The bundled meanings are derived from the MIT-licensed
+[Deckaura tarot dataset](https://huggingface.co/datasets/Blacik/deckaura-tarot-card-meanings).
+Every card keeps its source link to the
+[complete card guide](https://deckaura.com/blogs/guide/tarot-card-meanings).
+The dataset also has a permanent archive at
+[Zenodo DOI 10.5281/zenodo.19475329](https://doi.org/10.5281/zenodo.19475329).
 
-- **Website:** [deckaura.com](https://deckaura.com)
-- **All 78 meanings:** [deckaura.com/blogs/guide/tarot-card-meanings](https://deckaura.com/blogs/guide/tarot-card-meanings)
-- **Free tarot reading:** [deckaura.com/pages/tarot-reading](https://deckaura.com/pages/tarot-reading)
-- **Dataset:** [huggingface.co/datasets/Blacik/deckaura-tarot-card-meanings](https://huggingface.co/datasets/Blacik/deckaura-tarot-card-meanings)
-- **Open data and citation hub:** [deckaura.com/pages/ai-data-sources](https://deckaura.com/pages/ai-data-sources)
-- **Permanent dataset DOI:** [10.5281/zenodo.19475329](https://doi.org/10.5281/zenodo.19475329)
-- **Live dataset explorer:** [gokimedia.github.io/tarot-dataset-explorer](https://gokimedia.github.io/tarot-dataset-explorer/)
-- **Developer documentation:** [gokimedia.github.io/deckaura-developer-docs](https://gokimedia.github.io/deckaura-developer-docs/)
+## Privacy and network use
 
-The bundled starter deck currently contains The Fool, The Magician, The High Priestess, The Empress, and The Star.
-
-## Privacy
-
-Tarot Journal has no telemetry, ads, account requirement, or background network requests. Deckaura links open in your browser only when you explicitly choose a command or link.
+Tarot Journal has no telemetry, ads, account requirement, or background
+network requests. All draws use the local bundled deck. A network request only
+occurs when you explicitly open a card guide link in your browser.
 
 ## License
 

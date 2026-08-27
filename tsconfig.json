@@ -1,11 +1,13 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
+    "allowSyntheticDefaultImports": true,
     "inlineSourceMap": true,
     "inlineSources": true,
     "module": "ESNext",
     "moduleResolution": "node",
     "noImplicitAny": true,
+    "resolveJsonModule": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
     "target": "ES6",

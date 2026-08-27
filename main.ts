@@ -5,21 +5,25 @@ import {
   Notice,
   Plugin,
   PluginSettingTab,
-  Setting,
+  SettingDefinitionItem,
   TFile,
   TFolder,
   normalizePath,
 } from "obsidian";
 
+import deckData from "./cards.json";
+
 interface TarotJournalSettings {
   journalFolder: string;
   dailyTemplate: string;
+  includeReversed: boolean;
 }
 
 const DEFAULT_SETTINGS: TarotJournalSettings = {
   journalFolder: "Tarot Journal",
   dailyTemplate:
-    "## {{date}} — {{card}}\n\n**Upright:** {{upright}}\n\n**Reflection:**\n\n---\nCard guide: {{guideUrl}}\nPowered by [Deckaura](https://deckaura.com)\n",
+    "## {{card}} — {{date}}\n\n**Orientation:** {{orientation}}\n\n**Meaning:** {{meaning}}\n\n**Reflection:**\n\n**Guide:** [Read the card guide]({{guideUrl}})\n",
+  includeReversed: true,
 };
 
 type Card = {
@@ -29,171 +33,196 @@ type Card = {
   guideUrl: string;
 };
 
-const DECK: Card[] = [
-  {
-    name: "The Fool",
-    upright: "New beginnings, innocence, adventure",
-    reversed: "Recklessness, fear of change",
-    guideUrl: "https://deckaura.com/blogs/guide/fool-tarot-meaning",
-  },
-  {
-    name: "The Magician",
-    upright: "Manifestation, willpower, resourcefulness",
-    reversed: "Manipulation, poor planning",
-    guideUrl: "https://deckaura.com/blogs/guide/magician-tarot-meaning",
-  },
-  {
-    name: "The High Priestess",
-    upright: "Intuition, mystery, inner wisdom",
-    reversed: "Secrets, disconnection from intuition",
-    guideUrl: "https://deckaura.com/blogs/guide/high-priestess-tarot-meaning",
-  },
-  {
-    name: "The Empress",
-    upright: "Abundance, nurturing, fertility",
-    reversed: "Insecurity, creative block",
-    guideUrl: "https://deckaura.com/blogs/guide/empress-tarot-meaning",
-  },
-  {
-    name: "The Star",
-    upright: "Hope, faith, renewal, inspiration",
-    reversed: "Hopelessness, despair",
-    guideUrl: "https://deckaura.com/blogs/guide/star-tarot-meaning",
-  },
-];
+type CardDraw = {
+  card: Card;
+  orientation: "upright" | "reversed";
+  meaning: string;
+};
 
-function drawCard(): Card {
-  return DECK[Math.floor(Math.random() * DECK.length)]!;
+const DECK: Card[] = deckData.cards.map((card) => ({
+  name: card.card_name,
+  upright: card.upright_meaning,
+  reversed: card.reversed_meaning,
+  guideUrl: card.guide_url,
+}));
+
+function drawCard(includeReversed: boolean): CardDraw {
+  const card = DECK[Math.floor(Math.random() * DECK.length)];
+  const orientation =
+    includeReversed && Math.random() < 0.5 ? "reversed" : "upright";
+
+  return {
+    card,
+    orientation,
+    meaning: orientation === "upright" ? card.upright : card.reversed,
+  };
+}
+
+function formatLocalDate(date: Date): string {
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const monthText = month < 10 ? `0${month}` : `${month}`;
+  const dayText = day < 10 ? `0${day}` : `${day}`;
+  return `${date.getFullYear()}-${monthText}-${dayText}`;
+}
+
+function renderTemplate(
+  template: string,
+  draw: CardDraw,
+  date: string,
+): string {
+  const replacements: Record<string, string> = {
+    "{{date}}": date,
+    "{{card}}": draw.card.name,
+    "{{orientation}}": draw.orientation,
+    "{{meaning}}": draw.meaning,
+    "{{upright}}": draw.card.upright,
+    "{{reversed}}": draw.card.reversed,
+    "{{guideUrl}}": draw.card.guideUrl,
+  };
+
+  let output = template;
+  for (const placeholder of Object.keys(replacements)) {
+    output = output.split(placeholder).join(replacements[placeholder]);
+  }
+  return output;
 }
 
 export default class TarotJournalPlugin extends Plugin {
   settings: TarotJournalSettings = DEFAULT_SETTINGS;
 
-  async onload() {
+  async onload(): Promise<void> {
     await this.loadSettings();
 
     this.addRibbonIcon("dice", "Draw daily tarot card", () => {
-      this.drawDaily();
+      this.runDailyDraw();
     });
 
     this.addCommand({
       id: "draw-daily-tarot",
       name: "Draw daily tarot card",
-      callback: () => this.drawDaily(),
+      callback: () => this.runDailyDraw(),
     });
 
     this.addCommand({
       id: "insert-random-tarot",
-      name: "Insert random tarot card at cursor",
+      name: "Insert random tarot card",
       editorCallback: (editor: Editor, _view: MarkdownView) => {
-        const card = drawCard();
+        const draw = drawCard(this.settings.includeReversed);
         editor.replaceSelection(
-          `**${card.name}** — ${card.upright}\nGuide: ${card.guideUrl}\n`,
+          `**${draw.card.name} (${draw.orientation})** — ${draw.meaning}\n[Card guide](${draw.card.guideUrl})\n`,
         );
-      },
-    });
-
-    this.addCommand({
-      id: "open-deckaura",
-      name: "Open Deckaura",
-      callback: () => {
-        window.open("https://deckaura.com", "_blank");
       },
     });
 
     this.addSettingTab(new TarotJournalSettingTab(this.app, this));
   }
 
-  async drawDaily() {
-    const card = drawCard();
-    const date = new Date().toISOString().slice(0, 10);
-    const content = this.settings.dailyTemplate
-      .replace("{{date}}", date)
-      .replace("{{card}}", card.name)
-      .replace("{{upright}}", card.upright)
-      .replace("{{guideUrl}}", card.guideUrl);
+  private runDailyDraw(): void {
+    void this.drawDaily().catch((error: unknown) => {
+      console.error("Tarot Journal failed to save a daily draw", error);
+      const message =
+        error instanceof Error ? error.message : "An unexpected error occurred";
+      new Notice(`Could not save tarot reading: ${message}`);
+    });
+  }
 
+  private async ensureFolder(folder: string): Promise<void> {
+    const segments = folder.split("/").filter(Boolean);
+    let currentPath = "";
+
+    for (const segment of segments) {
+      currentPath = normalizePath(
+        currentPath ? `${currentPath}/${segment}` : segment,
+      );
+      const entry = this.app.vault.getAbstractFileByPath(currentPath);
+      if (!entry) {
+        await this.app.vault.createFolder(currentPath);
+      } else if (!(entry instanceof TFolder)) {
+        throw new Error(`${currentPath} exists and is not a folder`);
+      }
+    }
+  }
+
+  private async drawDaily(): Promise<void> {
+    const draw = drawCard(this.settings.includeReversed);
+    const date = formatLocalDate(new Date());
+    const content = renderTemplate(this.settings.dailyTemplate, draw, date);
     const folder = normalizePath(
       this.settings.journalFolder.trim() || DEFAULT_SETTINGS.journalFolder,
     );
-    const folderEntry = this.app.vault.getAbstractFileByPath(folder);
-    if (!folderEntry) {
-      await this.app.vault.createFolder(folder);
-    } else if (!(folderEntry instanceof TFolder)) {
-      new Notice(`Cannot create tarot journal: ${folder} is not a folder`);
-      return;
-    }
+
+    await this.ensureFolder(folder);
+
     const path = normalizePath(`${folder}/${date}.md`);
     const pathEntry = this.app.vault.getAbstractFileByPath(path);
     let file: TFile;
+
     if (pathEntry instanceof TFile) {
       file = pathEntry;
-      await this.app.vault.process(file, (existing) =>
-        `${existing}\n\n${content}`,
+      await this.app.vault.process(
+        file,
+        (existing) => `${existing}\n\n${content}`,
       );
     } else if (pathEntry) {
-      new Notice(`Cannot save tarot reading: ${path} is not a file`);
-      return;
+      throw new Error(`${path} exists and is not a file`);
     } else {
       file = await this.app.vault.create(path, content);
     }
+
     await this.app.workspace.getLeaf().openFile(file);
-    new Notice(`Drew ${card.name} — saved to ${path}`);
+    new Notice(`Drew ${draw.card.name} — saved to ${path}`);
   }
 
-  async loadSettings() {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-  }
-
-  async saveSettings() {
-    await this.saveData(this.settings);
+  private async loadSettings(): Promise<void> {
+    const saved =
+      (await this.loadData()) as Partial<TarotJournalSettings> | null;
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, saved);
   }
 }
 
 class TarotJournalSettingTab extends PluginSettingTab {
   plugin: TarotJournalPlugin;
+
   constructor(app: App, plugin: TarotJournalPlugin) {
     super(app, plugin);
     this.plugin = plugin;
   }
 
-  display() {
-    const { containerEl } = this;
-    containerEl.empty();
-
-    new Setting(containerEl)
-      .setName("Journal folder")
-      .setDesc("Folder where daily tarot notes are stored")
-      .addText((t) =>
-        t
-          .setPlaceholder("Tarot Journal")
-          .setValue(this.plugin.settings.journalFolder)
-          .onChange(async (v) => {
-            this.plugin.settings.journalFolder = v;
-            await this.plugin.saveSettings();
-          }),
-      );
-
-    new Setting(containerEl)
-      .setName("Daily template")
-      .setDesc("Template for daily tarot entries. Placeholders: {{date}}, {{card}}, {{upright}}, {{guideUrl}}")
-      .addTextArea((t) =>
-        t
-          .setPlaceholder(DEFAULT_SETTINGS.dailyTemplate)
-          .setValue(this.plugin.settings.dailyTemplate)
-          .onChange(async (v) => {
-            this.plugin.settings.dailyTemplate = v;
-            await this.plugin.saveSettings();
-          }),
-      );
-
-    containerEl.createEl("p", {
-      text: "Powered by Deckaura — visit deckaura.com for free tarot tools and full 78-card guides.",
-    });
-    const link = containerEl.createEl("a", {
-      text: "deckaura.com",
-      href: "https://deckaura.com",
-    });
-    link.setAttr("target", "_blank");
+  getSettingDefinitions(): SettingDefinitionItem<keyof TarotJournalSettings>[] {
+    return [
+      {
+        name: "Journal folder",
+        desc: "Folder where daily tarot notes are stored.",
+        control: {
+          type: "folder",
+          key: "journalFolder",
+          placeholder: DEFAULT_SETTINGS.journalFolder,
+          validate: (value: string) =>
+            value.trim() ? undefined : "Choose a journal folder.",
+        },
+      },
+      {
+        name: "Include reversed cards",
+        desc: "Allow draws to use upright and reversed interpretations.",
+        control: {
+          type: "toggle",
+          key: "includeReversed",
+          defaultValue: true,
+        },
+      },
+      {
+        name: "Daily template",
+        desc: "Available placeholders: {{date}}, {{card}}, {{orientation}}, {{meaning}}, {{upright}}, {{reversed}}, and {{guideUrl}}.",
+        control: {
+          type: "textarea",
+          key: "dailyTemplate",
+          placeholder: DEFAULT_SETTINGS.dailyTemplate,
+          rows: 10,
+          validate: (value: string) =>
+            value.trim() ? undefined : "Enter a daily note template.",
+        },
+      },
+    ];
   }
 }
