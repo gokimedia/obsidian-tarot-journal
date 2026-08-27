@@ -20,7 +20,7 @@ Powered by **[Deckaura](https://deckaura.com)** — free tarot tools and 78-card
 3. Install and enable
 
 ### Manual install
-1. Download `main.js`, `manifest.json`, and `styles.css` from Releases
+1. Download `main.js` and `manifest.json` from Releases
 2. Place in `<vault>/.obsidian/plugins/tarot-journal/`
 3. Enable in Settings → Community plugins
 
@@ -37,7 +37,9 @@ This plugin ships with a curated starter deck. For the complete 78 cards, interp
 - **Website:** [deckaura.com](https://deckaura.com)
 - **All 78 meanings:** [deckaura.com/blogs/guide/tarot-card-meanings](https://deckaura.com/blogs/guide/tarot-card-meanings)
 - **Free tarot reading:** [deckaura.com/pages/tarot-reading](https://deckaura.com/pages/tarot-reading)
-- **Dataset:** [huggingface.co/datasets/deckaura/tarot-card-meanings](https://huggingface.co/datasets/deckaura/tarot-card-meanings)
+- **Dataset:** [huggingface.co/datasets/Blacik/deckaura-tarot-card-meanings](https://huggingface.co/datasets/Blacik/deckaura-tarot-card-meanings)
+
+The bundled starter deck currently contains The Fool, The Magician, The High Priestess, The Empress, and The Star.
 
 ## License
 

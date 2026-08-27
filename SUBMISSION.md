@@ -6,19 +6,18 @@
 
 ## Build
 ```bash
-cd obsidian-plugin
 npm install
 npm run build
 ```
 Produces `main.js` from `main.ts`.
 
 ## Test locally
-1. Copy `manifest.json`, `main.js`, and `styles.css` (if added) to `<vault>/.obsidian/plugins/tarot-journal/`
+1. Copy `manifest.json` and `main.js` to `<vault>/.obsidian/plugins/tarot-journal/`
 2. Enable in Settings → Community plugins → Installed plugins
 
 ## Submit to Community Plugins
 1. Create a GitHub release on `github.com/gokimedia/obsidian-tarot-journal` with tag `1.0.0`
-2. Upload `main.js`, `manifest.json`, and `styles.css` as release assets
+2. Upload `main.js` and `manifest.json` as release assets
 3. Fork https://github.com/obsidianmd/obsidian-releases
 4. Add entry to `community-plugins.json`:
 ```json
